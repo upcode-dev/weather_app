@@ -2,9 +2,7 @@ import 'package:weather_app2/actions/index.dart';
 import 'package:weather_app2/models/weather.dart';
 
 class GetWeather implements AppAction {
-  GetWeather(this.lat, this.lon, this.name, this.onResult);
-
-  final ActionResult onResult;
+  GetWeather(this.lat, this.lon, this.name);
 
   final double lat;
   final double lon;

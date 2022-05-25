@@ -1,252 +1,373 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:intl/intl.dart';
+import 'package:redux/redux.dart';
+import 'package:weather_app2/actions/get_cities.dart';
+import 'package:weather_app2/actions/get_weather.dart';
+import 'package:weather_app2/models/app_state.dart';
 import 'package:weather_app2/models/city.dart';
-import 'package:weather_app2/models/weather.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  final List<City> _cities = <City>[];
-  final List<Weather> _weather = <Weather>[];
-  bool _isLoading = false;
-  bool _canSearch = true;
-  final TextEditingController _controller = TextEditingController();
-
-  @override
-  void initState() {
-    //_getCities();
-    super.initState();
-  }
-
-  Future<void> _getCities(String cityName) async {
-    setState(() {
-      _canSearch = false;
-      _isLoading = true;
-    });
-
-    final Response response = await get(
-      Uri.parse(
-        'http://api.openweathermap.org/geo/1.0/direct?q=$cityName&limit=5&appid=efc2113600604544cf7407bcd6ff4d8e',
-      ),
-    );
-
-    final List<dynamic> result = jsonDecode(response.body) as List<dynamic>;
-    final List<dynamic> cities = result;
-
-    final List<City> data = <City>[];
-    for (int i = 0; i < cities.length; i++) {
-      final Map<String, dynamic> item = cities[i] as Map<String, dynamic>;
-
-      data.add(City.fromJson(item));
-    }
-
-    setState(() {
-      _cities.addAll(data);
-      _isLoading = false;
-    });
-  }
-
-  int findWeatherUsingIndexWhere(List<Weather> weather, String cityName) {
-    final int index = weather.indexWhere((Weather element) => element.cityName == cityName);
-    if (index >= 0) {
-      return index;
-    } else {
-      return -1;
-    }
-  }
-
-  Future<void> _getWeather(double lat, double lon, String name) async {
-    final int indexOfWeather = findWeatherUsingIndexWhere(_weather, name);
-    if (indexOfWeather == -1) {
-      final Response response = await get(
-        Uri.parse(
-          'https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid=efc2113600604544cf7407bcd6ff4d8e',
-        ),
-      );
-
-      final Map<String, dynamic> result = jsonDecode(response.body) as Map<String, dynamic>;
-
-      final String cityName = name;
-      final int id = result['weather'][0]['id'] as int;
-      final String main = result['weather'][0]['main'] as String;
-      final String description = result['weather'][0]['description'] as String;
-      final String icon = result['weather'][0]['icon'] as String;
-      final double temp = result['main']['temp'] as double;
-      final double feelsLike = result['main']['feels_like'] as double;
-      final double tempMin = result['main']['temp_min'] as double;
-      final double tempMax = result['main']['temp_max'] as double;
-      final int pressure = result['main']['pressure'] as int;
-      final int humidity = result['main']['humidity'] as int;
-      final double windSpeed = result['wind']['speed'] as double;
-
-      final Weather weather = Weather(
-        cityName: cityName,
-        id: id,
-        main: main,
-        description: description,
-        icon: icon,
-        temp: temp,
-        feelsLike: feelsLike,
-        tempMin: tempMin,
-        tempMax: tempMax,
-        pressure: pressure,
-        humidity: humidity,
-        windSpeed: windSpeed,
-      );
-
-      setState(() {
-        _weather.add(weather);
-        showDialog<AlertDialog>(
-          barrierDismissible: false,
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Weather'),
-              content: Column(
-                children: <Widget>[
-                  Text('ID: ${weather.id}'),
-                  Text('main: ${weather.main}'),
-                  Text('name: ${weather.description}'),
-                  Text('icon: ${weather.icon}'),
-                  Text('temp: ${weather.temp}'),
-                  Text('feelsLike: ${weather.feelsLike}'),
-                  Text('tempMin: ${weather.tempMin}'),
-                  Text('tempMax: ${weather.tempMax}'),
-                  Text('pressure: ${weather.pressure}'),
-                  Text('humidity: ${weather.humidity}'),
-                  Text('windSpeed: ${weather.windSpeed}'),
-                ],
-              ),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('OK'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      });
-    } else {
-      setState(() {
-        showDialog<AlertDialog>(
-          barrierDismissible: false,
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Weather'),
-              content: Column(
-                children: <Widget>[
-                  Text('ID: ${_weather[indexOfWeather].id}'),
-                  Text('main: ${_weather[indexOfWeather].main}'),
-                  Text('name: ${_weather[indexOfWeather].description}'),
-                  Text('icon: ${_weather[indexOfWeather].icon}'),
-                  Text('temp: ${_weather[indexOfWeather].temp}'),
-                  Text('feelsLike: ${_weather[indexOfWeather].feelsLike}'),
-                  Text('tempMin: ${_weather[indexOfWeather].tempMin}'),
-                  Text('tempMax: ${_weather[indexOfWeather].tempMax}'),
-                  Text('pressure: ${_weather[indexOfWeather].pressure}'),
-                  Text('humidity: ${_weather[indexOfWeather].humidity}'),
-                  Text('windSpeed: ${_weather[indexOfWeather].windSpeed}'),
-                ],
-              ),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('OK'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      });
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Cities'),
-      ),
-      body: Builder(
-        builder: (BuildContext context) {
-          if (_canSearch) {
-            return Column(
-              children: <Widget>[
-                TextFormField(
-                  controller: _controller,
-                  decoration: const InputDecoration(border: OutlineInputBorder()),
-                ),
-                IconButton(
-                  onPressed: () {
-                    _getCities(_controller.text);
-                  },
-                  icon: const Icon(Icons.search),
-                ),
-              ],
-            );
-          }
-          if (_isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          return Column(
-            children: <Widget>[
-              TextFormField(
-                controller: _controller,
-                decoration: const InputDecoration(border: OutlineInputBorder()),
-              ),
-              IconButton(
-                onPressed: () {
-                  _getCities(_controller.text);
-                },
-                icon: const Icon(Icons.search),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  //shrinkWrap: true,
-                  itemCount: _cities.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final City city = _cities[index];
+    /*final Store<AppState> store = StoreProvider.of<AppState>(context);
+    final AppState state = store.state;*/
 
-                    return GestureDetector(
-                      onTap: () {
-                        _getWeather(city.lat, city.lon, city.name);
-                      },
-                      child: Column(
+    final TextEditingController _controller = TextEditingController();
+
+    return StoreConnector<AppState, AppState>(
+      converter: (Store<AppState> store) => store.state,
+      builder: (BuildContext context, AppState state) {
+        return Scaffold(
+          resizeToAvoidBottomInset: false,
+          appBar: AppBar(
+            title: const Center(child: Text('Weather App')),
+          ),
+          body: Builder(
+            builder: (BuildContext context) {
+              if (state.isLoading) {
+                return Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xbb268de2),
+                        Color(0x70229eff),
+                        //Color(0x00a6e1e5),
+                      ],
+                    ),
+                  ),
+                  child: const Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (state.canShowResult) {
+                final DateTime now = DateTime.now();
+                final int minutes = now.minute;
+                String minutesTwoDigits;
+                if (minutes < 10) {
+                  minutesTwoDigits = '0$minutes';
+                } else {
+                  minutesTwoDigits = minutes.toString();
+                }
+                final String day = DateFormat('EEEE').format(now);
+
+                /* action?
+                final int celsiusTemp = state.weather[0].temp;
+                final int fahrenheitTemp = ((celsiusTemp * 1.8) + 32).round();
+                int temp = celsiusTemp;
+
+                final int celsiusMaxTemp = state.weather[0].tempMax;
+                final int fahrenheitMaxTemp = ((celsiusMaxTemp * 1.8) + 32).round();
+                int maxTemp = celsiusMaxTemp;
+
+                final int celsiusMinTemp = state.weather[0].tempMin;
+                final int fahrenheitMinTemp = ((celsiusMinTemp * 1.8) + 32).round();
+                int minTemp = celsiusMinTemp;
+                bool isMetric = true;
+                 */
+
+                return Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xcc2c96ee),
+                        Color(0x50229eff),
+                      ],
+                    ),
+                  ),
+                  child: Column(
+                    children: <Widget>[
+                      Row(
                         children: <Widget>[
-                          Text('City name: ${city.name}'),
-                          Text('Country code: ${city.country}'),
-                          Text('latitude: ${city.lat}'),
-                          Text('longitude: ${city.lon}'),
-                          const SizedBox(height: 10),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: TextFormField(
+                                style: const TextStyle(color: Colors.white),
+                                controller: _controller,
+                                cursorColor: const Color(0xFF5C5C5C),
+                                decoration: const InputDecoration(
+                                  border: UnderlineInputBorder(),
+                                  label: Center(
+                                    child: Text(
+                                      'City name',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 16, 16, 16),
+                            child: CircleAvatar(
+                              radius: 24,
+                              backgroundColor: Colors.lightBlue,
+                              child: IconButton(
+                                iconSize: 32,
+                                color: Colors.white,
+                                onPressed: () {
+                                  StoreProvider.of<AppState>(context).dispatch(
+                                    GetCities(_controller.text),
+                                  );
+                                },
+                                icon: const Icon(Icons.search),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
+                      const SizedBox(height: 24),
+                      Expanded(
+                        child: Column(
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(40, 0, 40, 0),
+                              child: Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    flex: 6,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        Flexible(
+                                          child: Text(
+                                            '${state.weather[0].temp}\u2103',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 40,
+                                            ),
+                                          ),
+                                        ),
+                                        Flexible(
+                                          child: Text(
+                                            state.cities[0].name,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 32,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 24),
+                                        Flexible(
+                                          child: Text(
+                                            '${state.weather[0].tempMax}\u2103 / ${state.weather[0].tempMin}\u2103',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ),
+                                        Flexible(
+                                          child: Text(
+                                            'Feels like ${state.weather[0].feelsLike}\u2103',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ),
+                                        Flexible(
+                                          child: Text(
+                                            '$day, ${now.hour.toString()}:$minutesTwoDigits',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Flexible(
+                                    flex: 4,
+                                    fit: FlexFit.tight,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        Image(
+                                          image: NetworkImage(
+                                            'http://openweathermap.org/img/wn/${state.weather[0].icon}@2x.png',
+                                          ),
+                                        ),
+                                        Flexible(
+                                          child: Text(
+                                            state.weather[0].description,
+                                            textAlign: TextAlign.end,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 24,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: <Widget>[
+                                Flexible(
+                                  child: Image.asset(
+                                    'assets/humidity.png',
+                                    width: 56,
+                                    height: 56,
+                                  ),
+                                ),
+                                Flexible(
+                                  child: Image.asset(
+                                    'assets/wind.png',
+                                    width: 56,
+                                    height: 56,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: <Widget>[
+                                Flexible(
+                                  child: Text(
+                                    'Humidity:\n${state.weather[0].humidity}%',
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                                Flexible(
+                                  child: Text(
+                                    'Wind:\n${state.weather[0].windSpeed} km/h',
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+              return Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xbb268de2),
+                      Color(0x70229eff),
+                      //Color(0x00a6e1e5),
+                    ],
+                  ),
+                ),
+                child: Column(
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: TextFormField(
+                              style: const TextStyle(color: Colors.white),
+                              controller: _controller,
+                              cursorColor: const Color(0xFF5C5C5C),
+                              decoration: const InputDecoration(
+                                border: UnderlineInputBorder(),
+                                label: Center(
+                                  child: Text(
+                                    'City name',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 16, 16, 16),
+                          child: CircleAvatar(
+                            radius: 24,
+                            backgroundColor: Colors.lightBlue,
+                            child: IconButton(
+                              iconSize: 32,
+                              color: Colors.white,
+                              onPressed: () {
+                                StoreProvider.of<AppState>(context).dispatch(
+                                  GetCities(_controller.text),
+                                );
+                              },
+                              icon: const Icon(Icons.search),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Expanded(
+                      child: ListView.builder(
+                        //shrinkWrap: true,
+                        itemCount: state.cities.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          final City city = state.cities[index];
+                          return GestureDetector(
+                            onTap: () {
+                              StoreProvider.of<AppState>(context).dispatch(GetWeather(city.lat, city.lon, city.name));
+                            },
+                            child: Column(
+                              children: <Widget>[
+                                Text(
+                                  city.name,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                                Text(
+                                  'Country code: ${city.country}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
   }
 }

@@ -11,7 +11,7 @@ class WeatherApi {
   Future<List<City>> getCities(String cityName) async {
     final Response response = await _client.get(
       Uri.parse(
-        'http://api.openweathermap.org/geo/1.0/direct?q=$cityName&limit=5&appid=efc2113600604544cf7407bcd6ff4d8e',
+        'http://api.openweathermap.org/geo/1.0/direct?q=$cityName&limit=1&appid=efc2113600604544cf7407bcd6ff4d8e',
       ),
     );
 
@@ -43,13 +43,23 @@ class WeatherApi {
     final String main = result['weather'][0]['main'] as String;
     final String description = result['weather'][0]['description'] as String;
     final String icon = result['weather'][0]['icon'] as String;
-    final double temp = result['main']['temp'] as double;
-    final double feelsLike = result['main']['feels_like'] as double;
-    final double tempMin = result['main']['temp_min'] as double;
-    final double tempMax = result['main']['temp_max'] as double;
+    final double tempDouble = result['main']['temp'] - 273.15 as double;
+    final int temp = tempDouble.round();
+
+    final double feelsLikeDouble = result['main']['feels_like'] - 273.15 as double;
+    final int feelsLike = feelsLikeDouble.round();
+
+    final double tempMinDouble = result['main']['temp_min'] - 273.15 as double;
+    final int tempMin = tempMinDouble.round();
+
+    final double tempMaxDouble = result['main']['temp_max'] - 273.15 as double;
+    final int tempMax = tempMaxDouble.round();
+
     final int pressure = result['main']['pressure'] as int;
     final int humidity = result['main']['humidity'] as int;
-    final double windSpeed = result['wind']['speed'] as double;
+
+    final double windSpeedDouble = result['wind']['speed'] as double;
+    final int windSpeed = windSpeedDouble.round();
 
     final Weather weather = Weather(
       cityName: cityName,

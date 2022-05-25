@@ -8,25 +8,25 @@ class AppState {
     this.cities = const <City>[],
     this.weather = const <Weather>[],
     this.isLoading = false,
-    this.canSearch = true,
+    this.canShowResult = false,
   });
 
   final List<City> cities;
   final List<Weather> weather;
   final bool isLoading;
-  final bool canSearch;
+  final bool canShowResult;
 
   AppState copyWith({
     List<City>? cities,
     List<Weather>? weather,
     bool? isLoading,
-    bool? canSearch,
+    bool? canShowResult,
   }) {
     return AppState(
       cities: cities != null ? List<City>.unmodifiable(cities) : this.cities,
       weather: weather != null ? List<Weather>.unmodifiable(weather) : this.weather,
       isLoading: isLoading ?? this.isLoading,
-      canSearch: canSearch ?? this.canSearch,
+      canShowResult: canShowResult ?? this.canShowResult,
     );
   }
 
@@ -41,6 +41,6 @@ class AppState {
 
   @override
   String toString() {
-    return 'AppState{cities: $cities, weather: $weather, isLoading: $isLoading, canSearch: $canSearch}';
+    return 'AppState{cities: $cities, weather: $weather, isLoading: $isLoading, canShowResult: $canShowResult}';
   }
 }

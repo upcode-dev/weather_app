@@ -8,7 +8,7 @@ class GetCities implements AppAction {
 
   @override
   String toString() {
-    return 'GetCities{cityName: $cityName}';
+    return 'GetCities{cityName: $cityName';
   }
 }
 

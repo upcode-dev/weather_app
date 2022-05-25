@@ -34,13 +34,13 @@ class Weather {
   final String main;
   final String description;
   final String icon;
-  final double temp;
-  final double feelsLike;
-  final double tempMin;
-  final double tempMax;
+  final int temp;
+  final int feelsLike;
+  final int tempMin;
+  final int tempMax;
   final int pressure;
   final int humidity;
-  final double windSpeed;
+  final int windSpeed;
 
   @override
   String toString() {
