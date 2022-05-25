@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:intl/intl.dart';
 import 'package:redux/redux.dart';
+import 'package:weather_app2/actions/convert_to_imperial.dart';
+import 'package:weather_app2/actions/convert_to_metric.dart';
 import 'package:weather_app2/actions/get_cities.dart';
 import 'package:weather_app2/actions/get_weather.dart';
 import 'package:weather_app2/models/app_state.dart';
@@ -24,6 +26,19 @@ class HomePage extends StatelessWidget {
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
             title: const Center(child: Text('Weather App')),
+            actions: <Widget>[
+              IconButton(
+                onPressed: () {
+                  if (state.cities.isNotEmpty) {
+                    StoreProvider.of<AppState>(context)
+                        .dispatch(GetWeather(state.cities[0].lat, state.cities[0].lon, state.cities[0].name));
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('fail')));
+                  }
+                },
+                icon: const Icon(Icons.refresh),
+              ),
+            ],
           ),
           body: Builder(
             builder: (BuildContext context) {
@@ -33,8 +48,8 @@ class HomePage extends StatelessWidget {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xbb268de2),
+                      colors: <Color>[
+                        Color(0xcc268de2),
                         Color(0x70229eff),
                         //Color(0x00a6e1e5),
                       ],
@@ -55,29 +70,43 @@ class HomePage extends StatelessWidget {
                 }
                 final String day = DateFormat('EEEE').format(now);
 
-                /* action?
                 final int celsiusTemp = state.weather[0].temp;
                 final int fahrenheitTemp = ((celsiusTemp * 1.8) + 32).round();
-                int temp = celsiusTemp;
+                String temp;
 
                 final int celsiusMaxTemp = state.weather[0].tempMax;
                 final int fahrenheitMaxTemp = ((celsiusMaxTemp * 1.8) + 32).round();
-                int maxTemp = celsiusMaxTemp;
+                String maxTemp;
 
                 final int celsiusMinTemp = state.weather[0].tempMin;
                 final int fahrenheitMinTemp = ((celsiusMinTemp * 1.8) + 32).round();
-                int minTemp = celsiusMinTemp;
-                bool isMetric = true;
-                 */
+                String minTemp;
+
+                final int celsiusFeelsLike = state.weather[0].feelsLike;
+                final int fahrenheitFeelsLike = ((celsiusFeelsLike * 1.8) + 32).round();
+                String feelsLike;
+
+                final bool isMetric = state.isMetric;
+                if (isMetric) {
+                  temp = '$celsiusTemp\u00B0'; // u2103 = 'C\u00B0'
+                  maxTemp = '$celsiusMaxTemp\u00B0';
+                  minTemp = '$celsiusMinTemp\u00B0';
+                  feelsLike = '$celsiusFeelsLike\u00B0';
+                } else {
+                  temp = '$fahrenheitTemp\u2109';
+                  maxTemp = '$fahrenheitMaxTemp\u2109';
+                  minTemp = '$fahrenheitMinTemp\u2109';
+                  feelsLike = '$fahrenheitFeelsLike\u2109';
+                }
 
                 return Container(
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xcc2c96ee),
-                        Color(0x50229eff),
+                      colors: <Color>[
+                        Color(0xcc268de2),
+                        Color(0x70229eff),
                       ],
                     ),
                   ),
@@ -87,9 +116,9 @@ class HomePage extends StatelessWidget {
                         children: <Widget>[
                           Expanded(
                             child: Padding(
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.fromLTRB(40, 32, 16, 16),
                               child: TextFormField(
-                                style: const TextStyle(color: Colors.white),
+                                style: const TextStyle(color: Colors.white, fontSize: 20),
                                 controller: _controller,
                                 cursorColor: const Color(0xFF5C5C5C),
                                 decoration: const InputDecoration(
@@ -108,10 +137,10 @@ class HomePage extends StatelessWidget {
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 16, 16, 16),
+                            padding: const EdgeInsets.fromLTRB(0, 40, 32, 16),
                             child: CircleAvatar(
                               radius: 24,
-                              backgroundColor: Colors.lightBlue,
+                              backgroundColor: Colors.lightGreen,
                               child: IconButton(
                                 iconSize: 32,
                                 color: Colors.white,
@@ -119,6 +148,7 @@ class HomePage extends StatelessWidget {
                                   StoreProvider.of<AppState>(context).dispatch(
                                     GetCities(_controller.text),
                                   );
+                                  _controller.clear();
                                 },
                                 icon: const Icon(Icons.search),
                               ),
@@ -126,7 +156,7 @@ class HomePage extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32),
                       Expanded(
                         child: Column(
                           children: <Widget>[
@@ -142,7 +172,7 @@ class HomePage extends StatelessWidget {
                                       children: <Widget>[
                                         Flexible(
                                           child: Text(
-                                            '${state.weather[0].temp}\u2103',
+                                            temp,
                                             style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 40,
@@ -158,22 +188,22 @@ class HomePage extends StatelessWidget {
                                             ),
                                           ),
                                         ),
-                                        const SizedBox(height: 24),
+                                        const SizedBox(height: 32),
                                         Flexible(
                                           child: Text(
-                                            '${state.weather[0].tempMax}\u2103 / ${state.weather[0].tempMin}\u2103',
+                                            '$maxTemp / $minTemp',
                                             style: const TextStyle(
                                               color: Colors.white,
-                                              fontSize: 16,
+                                              fontSize: 18,
                                             ),
                                           ),
                                         ),
                                         Flexible(
                                           child: Text(
-                                            'Feels like ${state.weather[0].feelsLike}\u2103',
+                                            'Feels like $feelsLike',
                                             style: const TextStyle(
                                               color: Colors.white,
-                                              fontSize: 16,
+                                              fontSize: 18,
                                             ),
                                           ),
                                         ),
@@ -182,7 +212,7 @@ class HomePage extends StatelessWidget {
                                             '$day, ${now.hour.toString()}:$minutesTwoDigits',
                                             style: const TextStyle(
                                               color: Colors.white,
-                                              fontSize: 16,
+                                              fontSize: 18,
                                             ),
                                           ),
                                         ),
@@ -207,7 +237,7 @@ class HomePage extends StatelessWidget {
                                             textAlign: TextAlign.end,
                                             style: const TextStyle(
                                               color: Colors.white,
-                                              fontSize: 24,
+                                              fontSize: 18,
                                             ),
                                           ),
                                         ),
@@ -217,9 +247,9 @@ class HomePage extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 32),
+                            const SizedBox(height: 56),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: <Widget>[
                                 Flexible(
                                   child: Image.asset(
@@ -237,8 +267,9 @@ class HomePage extends StatelessWidget {
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 8),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: <Widget>[
                                 Flexible(
                                   child: Text(
@@ -262,6 +293,42 @@ class HomePage extends StatelessWidget {
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 48),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                const Flexible(
+                                  child: Text(
+                                    'Imperial units',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                                Switch(
+                                  value: isMetric,
+                                  onChanged: (bool value) {
+                                    if (value) {
+                                      StoreProvider.of<AppState>(context).dispatch(ConvertToMetric());
+                                    } else {
+                                      StoreProvider.of<AppState>(context).dispatch(ConvertToImperial());
+                                    }
+                                  },
+                                  activeTrackColor: Colors.lightGreenAccent,
+                                  activeColor: Colors.green,
+                                ),
+                                const Flexible(
+                                  child: Text(
+                                    'Metric units',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
@@ -275,8 +342,8 @@ class HomePage extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xbb268de2),
+                    colors: <Color>[
+                      Color(0xcc268de2),
                       Color(0x70229eff),
                       //Color(0x00a6e1e5),
                     ],
@@ -288,9 +355,9 @@ class HomePage extends StatelessWidget {
                       children: <Widget>[
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.fromLTRB(40, 32, 16, 16),
                             child: TextFormField(
-                              style: const TextStyle(color: Colors.white),
+                              style: const TextStyle(color: Colors.white, fontSize: 20),
                               controller: _controller,
                               cursorColor: const Color(0xFF5C5C5C),
                               decoration: const InputDecoration(
@@ -309,10 +376,10 @@ class HomePage extends StatelessWidget {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 16, 16, 16),
+                          padding: const EdgeInsets.fromLTRB(0, 40, 32, 16),
                           child: CircleAvatar(
                             radius: 24,
-                            backgroundColor: Colors.lightBlue,
+                            backgroundColor: Colors.lightGreen,
                             child: IconButton(
                               iconSize: 32,
                               color: Colors.white,
@@ -320,6 +387,7 @@ class HomePage extends StatelessWidget {
                                 StoreProvider.of<AppState>(context).dispatch(
                                   GetCities(_controller.text),
                                 );
+                                _controller.clear();
                               },
                               icon: const Icon(Icons.search),
                             ),

@@ -1,5 +1,7 @@
 import 'package:redux_epics/redux_epics.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:weather_app2/actions/convert_to_imperial.dart';
+import 'package:weather_app2/actions/convert_to_metric.dart';
 import 'package:weather_app2/actions/get_cities.dart';
 import 'package:weather_app2/actions/get_weather.dart';
 import 'package:weather_app2/actions/index.dart';
@@ -15,6 +17,8 @@ class AppEpic {
     return combineEpics(<Epic<AppState>>[
       TypedEpic<AppState, GetCities>(_getCities),
       TypedEpic<AppState, GetWeather>(_getWeather),
+      TypedEpic<AppState, ConvertToMetric>(_convertToMetric),
+      TypedEpic<AppState, ConvertToImperial>(_convertToImperial),
     ]);
   }
 
@@ -32,5 +36,19 @@ class AppEpic {
         //.map<dynamic>((List<Weather> weather) => GetWeatherSuccessful(weather))
         .map<AppAction>(GetWeatherSuccessful.new)
         .onErrorReturnWith((Object error, StackTrace stackTrace) => GetWeatherError(error));
+  }
+
+  Stream<AppAction> _convertToMetric(Stream<ConvertToMetric> actions, EpicStore<AppState> store) {
+    return actions
+        .asyncMap((ConvertToMetric action) => _weatherApi.convertUnits())
+        .map<AppAction>(ConvertToMetricSuccessful.new)
+        .onErrorReturnWith((Object error, StackTrace stackTrace) => ConvertToMetricError(error));
+  }
+
+  Stream<AppAction> _convertToImperial(Stream<ConvertToImperial> actions, EpicStore<AppState> store) {
+    return actions
+        .asyncMap((ConvertToImperial action) => _weatherApi.convertUnits())
+        .map<AppAction>(ConvertToImperialSuccessful.new)
+        .onErrorReturnWith((Object error, StackTrace stackTrace) => ConvertToImperialError(error));
   }
 }
