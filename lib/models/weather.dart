@@ -1,5 +1,6 @@
 class Weather {
   Weather({
+    required this.cityName,
     required this.id,
     required this.main,
     required this.description,
@@ -28,6 +29,7 @@ class Weather {
         windSpeed = item['wind']['speed'] as double;
    */
 
+  final String cityName;
   final int id;
   final String main;
   final String description;
