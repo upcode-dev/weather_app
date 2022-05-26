@@ -49,7 +49,7 @@ class HomePage extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: <Color>[
-                        Color(0xcc268de2),
+                        Color(0xbb268de2),
                         Color(0x70229eff),
                         //Color(0x00a6e1e5),
                       ],
@@ -105,7 +105,7 @@ class HomePage extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: <Color>[
-                        Color(0xcc268de2),
+                        Color(0xbb268de2),
                         Color(0x70229eff),
                       ],
                     ),
@@ -343,7 +343,7 @@ class HomePage extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: <Color>[
-                      Color(0xcc268de2),
+                      Color(0xbb268de2),
                       Color(0x70229eff),
                       //Color(0x00a6e1e5),
                     ],
