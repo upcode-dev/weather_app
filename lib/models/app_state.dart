@@ -9,6 +9,7 @@ class AppState {
     this.weather = const <Weather>[],
     this.isLoading = false,
     this.canShowResult = false,
+    this.initialSearch = true,
     this.isMetric = true,
   });
 
@@ -16,6 +17,7 @@ class AppState {
   final List<Weather> weather;
   final bool isLoading;
   final bool canShowResult;
+  final bool initialSearch;
   final bool isMetric;
 
   AppState copyWith({
@@ -23,6 +25,7 @@ class AppState {
     List<Weather>? weather,
     bool? isLoading,
     bool? canShowResult,
+    bool? initialSearch,
     bool? isMetric,
   }) {
     return AppState(
@@ -30,6 +33,7 @@ class AppState {
       weather: weather != null ? List<Weather>.unmodifiable(weather) : this.weather,
       isLoading: isLoading ?? this.isLoading,
       canShowResult: canShowResult ?? this.canShowResult,
+      initialSearch: initialSearch ?? this.initialSearch,
       isMetric: isMetric ?? this.isMetric,
     );
   }
@@ -45,6 +49,6 @@ class AppState {
 
   @override
   String toString() {
-    return 'AppState{cities: $cities, weather: $weather, isLoading: $isLoading, canShowResult: $canShowResult, isMetric: $isMetric}';
+    return 'AppState{cities: $cities, weather: $weather, isLoading: $isLoading, canShowResult: $canShowResult, isMetric: $isMetric, initialSearch: $initialSearch}';
   }
 }

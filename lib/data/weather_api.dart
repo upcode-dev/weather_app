@@ -11,7 +11,7 @@ class WeatherApi {
   Future<List<City>> getCities(String cityName) async {
     final Response response = await _client.get(
       Uri.parse(
-        'http://api.openweathermap.org/geo/1.0/direct?q=$cityName&limit=1&appid=efc2113600604544cf7407bcd6ff4d8e',
+        'http://api.openweathermap.org/geo/1.0/direct?q=$cityName&limit=5&appid=efc2113600604544cf7407bcd6ff4d8e',
       ),
     );
 

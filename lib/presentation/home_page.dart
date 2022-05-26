@@ -337,6 +337,107 @@ class HomePage extends StatelessWidget {
                 );
               }
 
+              if (state.initialSearch) {
+                return Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: <Color>[
+                        Color(0xbb268de2),
+                        Color(0x70229eff),
+                        //Color(0x00a6e1e5),
+                      ],
+                    ),
+                  ),
+                  child: Column(
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(40, 32, 16, 16),
+                              child: TextFormField(
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                ),
+                                controller: _controller,
+                                cursorColor: const Color(0xFF5C5C5C),
+                                decoration: const InputDecoration(
+                                  border: UnderlineInputBorder(),
+                                  label: Center(
+                                    child: Text(
+                                      'City name',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 40, 32, 16),
+                            child: CircleAvatar(
+                              radius: 24,
+                              backgroundColor: Colors.lightGreen,
+                              child: IconButton(
+                                iconSize: 32,
+                                color: Colors.white,
+                                onPressed: () {
+                                  StoreProvider.of<AppState>(context).dispatch(
+                                    GetCities(_controller.text),
+                                  );
+                                  _controller.clear();
+                                },
+                                icon: const Icon(Icons.search),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Expanded(
+                        child: ListView.builder(
+                          //shrinkWrap: true,
+                          itemCount: state.cities.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            final City city = state.cities[index];
+                            return GestureDetector(
+                              onTap: () {
+                                StoreProvider.of<AppState>(context).dispatch(GetWeather(city.lat, city.lon, city.name));
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(0, 24, 0, 0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    const Icon(
+                                      Icons.location_pin,
+                                      color: Colors.white,
+                                    ),
+                                    Text(
+                                      '${city.name}, ${city.country}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 24,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
               return Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
@@ -357,7 +458,10 @@ class HomePage extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsets.fromLTRB(40, 32, 16, 16),
                             child: TextFormField(
-                              style: const TextStyle(color: Colors.white, fontSize: 20),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                              ),
                               controller: _controller,
                               cursorColor: const Color(0xFF5C5C5C),
                               decoration: const InputDecoration(
@@ -397,36 +501,50 @@ class HomePage extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     Expanded(
-                      child: ListView.builder(
-                        //shrinkWrap: true,
-                        itemCount: state.cities.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          final City city = state.cities[index];
-                          return GestureDetector(
-                            onTap: () {
-                              StoreProvider.of<AppState>(context).dispatch(GetWeather(city.lat, city.lon, city.name));
-                            },
-                            child: Column(
-                              children: <Widget>[
-                                Text(
-                                  city.name,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                  ),
-                                ),
-                                Text(
-                                  'Country code: ${city.country}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                              ],
+                      child: Column(
+                        children: <Widget>[
+                          const Text(
+                            'Pick a location:',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
                             ),
-                          );
-                        },
+                          ),
+                          Expanded(
+                            child: ListView.builder(
+                              //shrinkWrap: true,
+                              itemCount: state.cities.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                final City city = state.cities[index];
+                                return GestureDetector(
+                                  onTap: () {
+                                    StoreProvider.of<AppState>(context)
+                                        .dispatch(GetWeather(city.lat, city.lon, city.name));
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.fromLTRB(0, 24, 0, 0),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: <Widget>[
+                                        const Icon(
+                                          Icons.location_pin,
+                                          color: Colors.white,
+                                        ),
+                                        Text(
+                                          '${city.name}, ${city.country}',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 24,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

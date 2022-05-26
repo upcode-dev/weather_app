@@ -36,7 +36,7 @@ AppState _getCities(AppState state, GetCities action) {
 
 AppState _getCitiesSuccessful(AppState state, GetCitiesSuccessful action) {
   //return state.copyWith(cities: <City>[...state.cities, ...action.cities], isLoading: false);
-  return state.copyWith(cities: action.cities, isLoading: false);
+  return state.copyWith(cities: action.cities, isLoading: false, initialSearch: false);
 }
 
 AppState _getCitiesError(AppState state, GetCitiesError action) {
