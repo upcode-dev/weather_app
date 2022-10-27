@@ -1,43 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:http/http.dart';
+import 'package:get_it/get_it.dart';
+import 'package:provider/provider.dart';
 import 'package:redux/redux.dart';
-import 'package:redux_epics/redux_epics.dart';
-import 'package:weather_app2/data/weather_api.dart';
-import 'package:weather_app2/epics/app_epic.dart';
-import 'package:weather_app2/models/app_state.dart';
-import 'package:weather_app2/presentation/home_page.dart';
-import 'package:weather_app2/reducer/reducer.dart';
+import 'package:weather_app/src/init/init.dart';
+import 'package:weather_app/src/models/index.dart';
+import 'package:weather_app/src/presentation/home_page.dart';
 
-void main() {
-  final Client client = Client();
-  final WeatherApi weatherApi = WeatherApi(client);
-  final AppEpic epic = AppEpic(weatherApi);
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding.instance.deferFirstFrame();
 
-  final Store<AppState> store = Store<AppState>(
-    reducer,
-    initialState: const AppState(),
-    middleware: <Middleware<AppState>>[
-      EpicMiddleware<AppState>(epic.getEpics()),
-    ],
-  );
+  final GetIt getIt = await init();
+  runApp(WeatherApp(getIt: getIt));
 
-  //store.dispatch(GetCities('Cluj'));
-
-  runApp(WeatherApp(store: store));
+  WidgetsBinding.instance.allowFirstFrame();
 }
 
 class WeatherApp extends StatelessWidget {
-  const WeatherApp({Key? key, required this.store}) : super(key: key);
+  const WeatherApp({Key? key, required this.getIt}) : super(key: key);
 
-  final Store<AppState> store;
+  final GetIt getIt;
 
   @override
   Widget build(BuildContext context) {
-    return StoreProvider<AppState>(
-      store: store,
-      child: const MaterialApp(
-        home: HomePage(),
+    return Provider<GetIt>(
+      create: (BuildContext context) => getIt,
+      child: StoreProvider<AppState>(
+        store: getIt.get<Store<AppState>>(),
+        child: const MaterialApp(
+          home: HomePage(),
+        ),
       ),
     );
   }
