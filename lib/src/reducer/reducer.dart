@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:redux/redux.dart';
 import 'package:weather_app/src/actions/index.dart';
 import 'package:weather_app/src/models/index.dart';
@@ -7,7 +8,9 @@ AppState reducer(AppState state, dynamic action) {
     throw ArgumentError('All actions should implement AppAction.');
   }
 
-  print(action);
+  if (kDebugMode) {
+    print(action);
+  }
 
   return _reducer(state, action);
 }

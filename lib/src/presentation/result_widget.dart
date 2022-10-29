@@ -149,7 +149,7 @@ class ResultWidget extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
                                 Image(
-                                  image: NetworkImage('http://openweathermap.org/img/wn/${vm.icon}@2x.png'),
+                                  image: NetworkImage('https://openweathermap.org/img/wn/${vm.icon}@2x.png'),
                                 ),
                                 Flexible(
                                   child: Text(
@@ -229,7 +229,6 @@ class ResultWidget extends StatelessWidget {
                         Switch(
                           value: vm.isMetric,
                           onChanged: (bool value) {
-                            print('value: $value');
                             context.dispatch(SetIsMetric(isMetric: value));
                           },
                           activeTrackColor: Colors.lightGreenAccent,
